@@ -1,4 +1,4 @@
-import { StyleSheet, Image, View } from 'react-native';
+import { StyleSheet, Image, ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -55,20 +55,26 @@ export default function TabTwoScreen() {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      {game?.image && <Image source={{ uri: game.image }} style={styles.gameImage} />}
-      <ThemedText type="title" style={styles.title}>{game?.title || 'Unknown Game'}</ThemedText>
-      <ThemedText style={styles.genre}>Genre: {game?.genre}</ThemedText>
-    </ThemedView>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ThemedView style={styles.container}>
+        {game?.image && <Image source={{ uri: game.image }} style={styles.gameImage} />}
+        <ThemedText type="title" style={styles.title}>{game?.title || 'Unknown Game'}</ThemedText>
+        <ThemedText style={styles.genre}>Genre: {game?.genre}</ThemedText>
+      </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+  },
+  container: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   gameImage: {
     width: 300,
