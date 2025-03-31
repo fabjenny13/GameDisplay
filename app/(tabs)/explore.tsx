@@ -1,11 +1,10 @@
-import { StyleSheet, Image, ScrollView } from 'react-native';
+import { StyleSheet, Image, ScrollView, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
 const API_KEY = 'e3d736e2e4cda6fb4c831ad32e509837b1aaa078';
-const GAME_ID = '3030-4725';
-const URL = `https://www.giantbomb.com/api/game/${GAME_ID}/?api_key=${API_KEY}&format=json&field_list=genres,name,image`;
+const URL = `https://www.giantbomb.com/api/games/?api_key=${API_KEY}&format=json&field_list=id,name,genres,image&limit=10`;
 
 interface Game {
   id: number;
@@ -17,22 +16,23 @@ interface Game {
 export default function TabTwoScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [game, setGame] = useState<Game | null>(null);
+  const [games, setGames] = useState<Game[]>([]);
 
   useEffect(() => {
-    const fetchGame = async () => {
+    const fetchGames = async () => {
       setIsLoading(true);
       try {
         const response = await fetch(URL);
         const data = await response.json();
 
         if (data && data.results) {
-          setGame({
-            id: data.results.id,
-            title: data.results.name,
-            genre: data.results.genres?.map((g: any) => g.name).join(', ') || 'Unknown',
-            image: data.results.image?.original_url || '',
-          });
+          const gameList = data.results.map((game: any) => ({
+            id: game.id,
+            title: game.name,
+            genre: game.genres?.map((g: any) => g.name).join(', ') || 'Unknown',
+            image: game.image?.original_url || '',
+          }));
+          setGames(gameList);
         } else {
           throw new Error('Invalid response data');
         }
@@ -43,7 +43,7 @@ export default function TabTwoScreen() {
       }
     };
 
-    fetchGame();
+    fetchGames();
   }, []);
 
   if (isLoading) {
@@ -57,9 +57,13 @@ export default function TabTwoScreen() {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <ThemedView style={styles.container}>
-        {game?.image && <Image source={{ uri: game.image }} style={styles.gameImage} />}
-        <ThemedText type="title" style={styles.title}>{game?.title || 'Unknown Game'}</ThemedText>
-        <ThemedText style={styles.genre}>Genre: {game?.genre}</ThemedText>
+        {games.map((game) => (
+          <View key={game.id} style={styles.gameItem}>
+            {game.image && <Image source={{ uri: game.image }} style={styles.gameImage} />}
+            <ThemedText type="title" style={styles.title}>{game.title}</ThemedText>
+            <ThemedText style={styles.genre}>Genre: {game.genre}</ThemedText>
+          </View>
+        ))}
       </ThemedView>
     </ScrollView>
   );
@@ -68,12 +72,14 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   container: {
-    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gameItem: {
+    marginBottom: 30,
     alignItems: 'center',
   },
   gameImage: {
@@ -83,12 +89,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   title: {
-    marginTop: 20,
+    marginTop: 10,
     fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   genre: {
-    marginTop: 10,
+    marginTop: 5,
     fontSize: 18,
+    textAlign: 'center',
   },
 });
